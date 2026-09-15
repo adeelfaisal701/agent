@@ -1,0 +1,23 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Check, Copy, Pencil, RefreshCw, Square, ThumbsDown, ThumbsUp, Volume2, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
+import type { ChatMessage, Feedback } from "@/types/chat";
+
+interface MessageProps { message: ChatMessage; index: number; busy?: boolean; onRegenerate?: () => void; onEdit?: (content: string) => void; onFeedback?: (feedback: Feedback) => void; }
+
+export function Message({ message, index, busy = false, onRegenerate, onEdit, onFeedback }: MessageProps) {
+  const isUser = message.role === "user";
+  const [copiedBlock, setCopiedBlock] = useState<number | null>(null);
+  const [copiedResponse, setCopiedResponse] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(message.content);
+  const [speaking, setSpeaking] = useState(false);
+  let codeBlockIndex = 0;
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  function speak() { if (!("speechSynthesis" in window)) return; if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; } const utterance = new SpeechSynthesisUtterance(message.content); utterance.onend = () => setSpeaking(false); utterance.onerror = () => setSpeaking(false); window.speechSynthesis.speak(utterance); setSpeaking(true); }
+  return <article className={`message-row ${isUser ? "message-row-user" : "message-row-agent"}`}><div className={`message-wrap ${isUser ? "user-wrap" : "agent-wrap"}`}>{!isUser && <div className="message-heading"><div className="avatar agent-avatar">N</div><span>NEXUS</span><span className="message-role">AI AGENT</span></div>}<div className={`message-bubble ${isUser ? "user-bubble" : "agent-bubble"}`}>{isUser ? editing ? <div className="edit-message"><textarea value={draft} onChange={(event) => setDraft(event.target.value)} autoFocus /><div><button onClick={() => { if (draft.trim()) { onEdit?.(draft.trim()); setEditing(false); } }}><Check size={13} /> Save</button><button onClick={() => { setDraft(message.content); setEditing(false); }}><X size={13} /> Cancel</button></div></div> : <p className="whitespace-pre-wrap">{message.content}</p> : <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={{ pre({ children }) { const blockIndex = codeBlockIndex++; const code = Array.isArray(children) ? children[0] : children; const className = code && typeof code === "object" && "props" in code ? String(code.props.className || "") : ""; const language = className.match(/language-(\w+)/)?.[1] || "CODE"; return <div className="code-shell"><div className="code-toolbar"><span>{language.toUpperCase()}</span><button className="copy-code" onClick={async (event) => { const text = event.currentTarget.parentElement?.nextElementSibling?.textContent || ""; await navigator.clipboard.writeText(text); setCopiedBlock(blockIndex); setTimeout(() => setCopiedBlock(null), 1600); }}>{copiedBlock === blockIndex ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}</button></div><pre>{children}</pre></div>; }, code({ className, children, ...props }) { return <code className={className} {...props}>{children}</code>; } }}>{message.content}</ReactMarkdown>}</div><time className="message-time">{isUser ? "You" : "Nexus"}</time><div className={`message-actions ${isUser ? "user-actions" : ""}`}>{isUser ? <button onClick={() => setEditing(true)} disabled={busy} aria-label={`Edit message ${index}`} title="Edit message"><Pencil size={13} /></button> : <><button onClick={async () => { await navigator.clipboard.writeText(message.content); setCopiedResponse(true); setTimeout(() => setCopiedResponse(false), 1600); }} aria-label="Copy response" title="Copy response">{copiedResponse ? <Check size={13} /> : <Copy size={13} />}</button><button onClick={speak} aria-label={speaking ? "Stop speaking" : "Read response aloud"} title={speaking ? "Stop speaking" : "Read response aloud"}>{speaking ? <Square size={12} /> : <Volume2 size={13} />}</button><button onClick={onRegenerate} disabled={busy} aria-label="Regenerate response" title="Regenerate response"><RefreshCw size={13} /></button><button className={message.feedback === "like" ? "selected" : ""} onClick={() => onFeedback?.("like")} aria-label="Like response" title="Like response"><ThumbsUp size={13} /></button><button className={message.feedback === "dislike" ? "selected" : ""} onClick={() => onFeedback?.("dislike")} aria-label="Dislike response" title="Dislike response"><ThumbsDown size={13} /></button></>}</div></div></article>;
+}
