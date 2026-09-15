@@ -257,3 +257,17 @@ body { font-family: var(--font-geist-sans), ui-sans-serif, sans-serif; backgroun
 @media (max-width: 700px) { .app-shell::before { left: 0; }.sidebar { position: fixed; z-index: 10; top: 0; bottom: 0; left: 0; width: 272px; flex-basis: 272px; padding-top: 20px; transform: translateX(-100%); transition: transform .2s ease; }.sidebar.sidebar-open { transform: translateX(0); }.chat-header { min-height: 70px; padding: 15px 18px; }.messages-inner { width: calc(100% - 32px); padding-top: 15px; }.empty-state { padding-top: 38px; }.empty-state h2 { font-size: 37px; }.welcome-copy { font-size: 11px; }.suggestions { grid-template-columns: 1fr 1fr; gap: 8px; }.suggestion-card { min-height: 116px; padding: 11px; }.suggestion-text small { max-width: 105px; }.message-wrap { max-width: 91%; } }
 @media (max-width: 430px) { .suggestions { grid-template-columns: 1fr; }.suggestion-card { min-height: 76px; flex-direction: row; align-items: center; gap: 10px; }.suggestion-text { margin-top: 0; }.suggestion-arrow { right: 12px; top: 50%; bottom: auto; transform: translateY(-50%); }.empty-state h2 { font-size: 33px; }.welcome-copy br { display: none; } }
 
+/* Keep sidebar history independent from pinned bottom controls. */
+.sidebar { height: 100dvh; min-height: 0; overflow: hidden; }
+.sidebar-history { min-height: 0; flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+.sidebar-history .conversation-list { overflow: visible; }
+.sidebar-bottom { flex: 0 0 auto; margin-top: 12px; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.sidebar-bottom .agent-settings { margin-top: 0; }
+.sidebar-bottom .sidebar-footer { margin-top: 0; }
+@media (max-width: 700px) {
+  .sidebar { height: 100dvh; max-height: 100dvh; }
+  .sidebar-bottom { margin-top: 8px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .sidebar-bottom .agent-settings summary, .sidebar-bottom .account-settings { min-height: 44px; }
+  .sidebar-bottom .sidebar-footer { min-height: 64px; }
+}
+
