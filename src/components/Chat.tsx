@@ -8,10 +8,11 @@ import { Sidebar } from "@/components/Sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { ChatAttachment, ChatMessage, Conversation, Feedback } from "@/types/chat";
 import type { AgentSettings } from "@/lib/agent/types";
+import { createId } from "@/lib/id";
 import { loadConversations, loadFeedback, saveConversations, saveFeedback } from "@/lib/storage";
 
-const makeMessage = (role: ChatMessage["role"], content: string): ChatMessage => ({ id: crypto.randomUUID(), role, content, createdAt: Date.now() });
-const makeConversation = (): Conversation => ({ id: crypto.randomUUID(), title: "New conversation", messages: [], updatedAt: Date.now() });
+const makeMessage = (role: ChatMessage["role"], content: string): ChatMessage => ({ id: createId(), role, content, createdAt: Date.now() });
+const makeConversation = (): Conversation => ({ id: createId(), title: "New conversation", messages: [], updatedAt: Date.now() });
 const defaultSettings: AgentSettings = { webSearch: true, fileAnalysis: true, voice: true, responseStyle: "balanced" };
 const suggestions = [{ label: "Explain something", detail: "Get clear and simple explanations", prompt: "Explain this concept clearly", icon: Lightbulb, tone: "violet" }, { label: "Write code", detail: "Generate, debug, and explain code", prompt: "Help me write some code", icon: Code2, tone: "blue" }, { label: "Brainstorm ideas", detail: "Get creative ideas and perspectives", prompt: "Help me brainstorm ideas", icon: Brain, tone: "mint" }, { label: "Analyze a problem", detail: "Break down complex problems", prompt: "Help me analyze this problem", icon: BarChart3, tone: "gold" }];
 
